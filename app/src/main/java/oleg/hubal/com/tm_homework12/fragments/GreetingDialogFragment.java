@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 
+import oleg.hubal.com.tm_homework12.Constants;
+
 /**
  * Created by User on 15.03.2016.
  */
@@ -13,7 +15,7 @@ public class GreetingDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle bundle = getArguments();
-        String user = bundle.getString("user");
+        String user = bundle.getString(Constants.GREETING_BUNDLE_TAG);
 
         return new AlertDialog
                 .Builder(getActivity())

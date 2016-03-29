@@ -1,5 +1,7 @@
 package oleg.hubal.com.tm_homework12.fragments;
 
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -10,7 +12,10 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import oleg.hubal.com.tm_homework12.database.DatabaseHeadlessFragment;
+import oleg.hubal.com.tm_homework12.database.DatabaseHelper;
 import oleg.hubal.com.tm_homework12.R;
+import oleg.hubal.com.tm_homework12.Constants;
 
 /**
  * Created by User on 13.03.2016.
@@ -22,14 +27,36 @@ public class RegFragment extends Fragment implements View.OnClickListener {
     private RadioGroup radioGroup;
     private Button btnCreate;
     private String login, password, name, surname;
+    private DatabaseHeadlessFragment dbFragment;
+    private DatabaseHelper mDBHelper;
+    private SQLiteDatabase db;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle sabedInstanceState) {
         view = inflater.inflate(R.layout.fragment_reg, container, false);
 
         initViews();
+        getDatabase();
 
         return view;
+    }
+
+    @Override
+    public void onClick(View v) {
+        getFieldValues();
+
+        if(isEmptyFields())
+            Toast.makeText(getActivity(), R.string.empty_field_toast, Toast.LENGTH_LONG).show();
+        else {
+            insertUser();
+            showDialogFragment();
+        }
+    }
+
+    private void getDatabase() {
+        dbFragment = (DatabaseHeadlessFragment) getFragmentManager().findFragmentByTag(Constants.DB_HEADLESS_TAG);
+        mDBHelper = dbFragment.getDatabase();
+        db = mDBHelper.getWritableDatabase();
     }
 
     private void initViews() {
@@ -42,26 +69,24 @@ public class RegFragment extends Fragment implements View.OnClickListener {
         btnCreate.setOnClickListener(this);
     }
 
-    @Override
-    public void onClick(View v) {
-        getFieldValues();
+    private void insertUser() {
+        ContentValues values = new ContentValues();
+        values.put(Constants.DB_LOGIN, login);
+        values.put(Constants.DB_PASSWORD, password);
+        values.put(Constants.DB_USERNAME, name);
+        values.put(Constants.DB_USERSURNAME, surname);
 
-        if(isEmptyFields())
-            Toast.makeText(getActivity(), R.string.empty_field_toast, Toast.LENGTH_LONG).show();
-        else {
-//            Add to database
-            showDialogFragment();
-        }
+        db.insert(Constants.DB_TABLE, Constants.DB_LOGIN, values);
     }
 
     private void showDialogFragment() {
         GreetingDialogFragment dialogFragment = new GreetingDialogFragment();
 
         Bundle bundle = new Bundle();
-        bundle.putString("user", name + " " + surname);
+        bundle.putString(Constants.GREETING_BUNDLE_TAG, name + " " + surname);
         dialogFragment.setArguments(bundle);
 
-        dialogFragment.show(getActivity().getFragmentManager(), "dialog");
+        dialogFragment.show(getActivity().getFragmentManager(), "");
     }
 
     private boolean isEmptyFields() {
